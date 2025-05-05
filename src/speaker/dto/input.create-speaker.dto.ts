@@ -1,6 +1,6 @@
 import { IsString, IsUUID } from "class-validator";
 
-export class CreateSpeakerDto {
+export class InputCreateSpeakerDto {
   @IsString()
   name: string;
   

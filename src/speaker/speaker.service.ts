@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Speaker } from './entities/speaker.entity';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Project } from 'src/project/entities/project.entity';
-import { CreateSpeakerDto } from './dto/create-speaker.dto';
-import { UpdateSpeakerDto } from './dto/update-speaker.dto';
+import { InputCreateSpeakerDto } from './dto/input.create-speaker.dto';
+import { InputUpdateSpeakerDto } from './dto/input.update-speaker.dto';
+import {OutputGetSpeakerDto} from "./dto/output.get-speaker.dto";
 
 @Injectable()
 export class SpeakerService {
@@ -13,7 +14,7 @@ export class SpeakerService {
     @InjectRepository(Project) private readonly projectRepository: Repository<Project>
   ) {}
   
-  async create(createSpeakerDto: CreateSpeakerDto): Promise<Speaker> {
+  async create(createSpeakerDto: InputCreateSpeakerDto): Promise<OutputGetSpeakerDto> {
     const { projectId, ...speakerData } = createSpeakerDto;
     const project = await this.projectRepository.findOneBy({ id: projectId });
     
@@ -23,28 +24,53 @@ export class SpeakerService {
       ...speakerData,
       project,
     });
-    
-    return this.speakerRepository.save(newSpeaker);
+
+    const speaker = await  this.speakerRepository.save(newSpeaker);
+    return {
+      id: speaker.id,
+      name: speaker.name,
+      image: speaker.image,
+      createdAt: speaker.createdAt.toISOString(),
+      updatedAt: speaker.updatedAt.toISOString(),
+      project: speaker.project.id,
+    } as OutputGetSpeakerDto;
   }
   
-  async findAll(projectId?: string): Promise<Speaker[]> {
+  async findAll(projectId?: string): Promise<OutputGetSpeakerDto[]> {
     const where: FindOptionsWhere<Speaker> = {};
     if (projectId) {
       where.project = { id: projectId };
     }
-    return this.speakerRepository.find({ where, relations: ['project']});
+    const data = await this.speakerRepository.find({ where, relations: ['project']})
+    return data.map((elem: Speaker) => {
+      return {
+        id: elem.id,
+        name: elem.name,
+        image: elem.image,
+        createdAt: elem.createdAt.toISOString(),
+        updatedAt: elem.updatedAt.toISOString(),
+        project: elem.project.id,
+      } as OutputGetSpeakerDto;
+    })
   }
   
-  async findOne(id: string): Promise<Speaker> {
+  async findOne(id: string): Promise<OutputGetSpeakerDto> {
     const speaker = await this.speakerRepository.findOne({
       where: { id },
       relations: ['project'],
     });
     if (!speaker) throw new NotFoundException(`Speaker with ID "${id}" not found.`);
-    return speaker;
+    return {
+      id: speaker.id,
+      name: speaker.name,
+      image: speaker.image,
+      createdAt: speaker.createdAt.toISOString(),
+      updatedAt: speaker.updatedAt.toISOString(),
+      project: speaker.project.id,
+    } as OutputGetSpeakerDto;
   }
   
-  async update(id: string, updateSpeakerDto: UpdateSpeakerDto): Promise<Speaker> {
+  async update(id: string, updateSpeakerDto: InputUpdateSpeakerDto): Promise<OutputGetSpeakerDto> {
     const { projectId, ...speakerData } = updateSpeakerDto;
     const speaker = await this.speakerRepository.findOneBy({ id });
     if (!speaker) throw new NotFoundException(`Speaker with ID "${id}" not found.`);
@@ -56,8 +82,17 @@ export class SpeakerService {
     }
     
     Object.assign(speaker, speakerData);
-    
-    return this.speakerRepository.save(speaker);
+    await this.speakerRepository.save(speaker);
+    const output = await this.speakerRepository.findOne({ where: { id: speaker.id }, relations: ['project'] });
+    console.log(output);
+    return {
+      id: output?.id,
+      name: output?.name,
+      image: output?.image,
+      createdAt: output?.createdAt.toISOString(),
+      updatedAt: output?.updatedAt.toISOString(),
+      project: output?.project?.id,
+    } as OutputGetSpeakerDto;
   }
   
   async remove(id: string): Promise<void> {

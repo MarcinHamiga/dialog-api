@@ -15,9 +15,10 @@ async function bootstrap() {
     })
   )
     app.enableCors({
-        origin: 'http://localhost:5137'
+        origin: true,
+        methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     });
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(process.env.PORT ?? 3000, "0.0.0.0");
   console.log(`Application running on ${await app.getUrl()}`)
 }
 
