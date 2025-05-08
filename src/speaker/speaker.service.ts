@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Speaker } from './entities/speaker.entity';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Project } from 'src/project/entities/project.entity';
 import { InputCreateSpeakerDto } from './dto/input.create-speaker.dto';
 import { InputUpdateSpeakerDto } from './dto/input.update-speaker.dto';
 import {OutputGetSpeakerDto} from "./dto/output.get-speaker.dto";
+import {OutputGetPaginatedSpeakerDto} from "./dto/output.get-paginated-speakers.dto";
 
 @Injectable()
 export class SpeakerService {
@@ -35,23 +36,51 @@ export class SpeakerService {
       project: speaker.project.id,
     } as OutputGetSpeakerDto;
   }
-  
-  async findAll(projectId?: string): Promise<OutputGetSpeakerDto[]> {
-    const where: FindOptionsWhere<Speaker> = {};
-    if (projectId) {
-      where.project = { id: projectId };
+
+  async findAll(
+      projectId?: string,
+      limit?: number,
+      page?: number,
+      order: "DESC" | "ASC" | "asc" | "desc" = "DESC"
+  ): Promise<OutputGetPaginatedSpeakerDto> {
+    // Upewniamy się, że wartości mają sens
+    if (!limit || limit <= 0) {
+      limit = 10;
     }
-    const data = await this.speakerRepository.find({ where, relations: ['project']})
-    return data.map((elem: Speaker) => {
-      return {
-        id: elem.id,
-        name: elem.name,
-        image: elem.image,
-        createdAt: elem.createdAt.toISOString(),
-        updatedAt: elem.updatedAt.toISOString(),
-        project: elem.project.id,
-      } as OutputGetSpeakerDto;
-    })
+
+    if (!page || page <= 0) {
+      page = 1;
+    }
+
+    // Składamy parametry dla findAndCount
+    const whereClause = projectId ? { project: { id: projectId } } : {};
+
+    const [data, total] = await this.speakerRepository.findAndCount({
+      where: whereClause,
+      relations: ['project'],
+      take: limit,
+      skip: (page - 1) * limit,
+      order: { updatedAt: order }
+    });
+
+    const speakerArray = data.map((elem: Speaker) => ({
+      id: elem.id,
+      name: elem.name,
+      image: elem.image,
+      createdAt: elem.createdAt.toISOString(),
+      updatedAt: elem.updatedAt.toISOString(),
+      project: elem.project.id,
+    }))
+    let outputData = {
+      data: speakerArray,
+      total,
+      pages: 0
+    }
+    if (limit) outputData.pages = Math.ceil(total / limit);
+    const output = new OutputGetPaginatedSpeakerDto();
+    Object.assign(output, outputData);
+
+    return output;
   }
   
   async findOne(id: string): Promise<OutputGetSpeakerDto> {

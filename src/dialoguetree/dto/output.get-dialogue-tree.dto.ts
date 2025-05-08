@@ -1,21 +1,18 @@
 import {Expose} from "class-transformer";
 
-export class OutputGetSpeakerDto {
+export class  OutputGetDialogueTreeDto {
     @Expose()
     id: string;
 
     @Expose()
-    name: string;
+    treeName: string;
 
     @Expose()
-    image?: string;
+    treeId: string;
 
     @Expose()
     createdAt: string;
 
     @Expose()
     updatedAt: string;
-
-    @Expose()
-    project: string;
 }

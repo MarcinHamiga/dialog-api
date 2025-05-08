@@ -16,6 +16,12 @@ export class DialogueTree {
     }
   )
   project: Project;
+
+  @Column({type: "text", length: 128})
+  treeName: string;
+
+  @Column({type: "text", length: 32})
+  treeId: string;
   
   @CreateDateColumn()
   createdAt: Date;
