@@ -1,5 +1,5 @@
 import { Dialogue } from "src/dialogue/entities/dialogue.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {Column, CreateDateColumn, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
 
 @Entity()
 export class Choice {
@@ -14,6 +14,12 @@ export class Choice {
   
   @Column('text', { nullable: false })
   text: string;
+
+  @Column('integer')
+  position: number;
+
+  @OneToOne(() => Dialogue, { nullable: true })
+  next: Dialogue | null;
   
   @CreateDateColumn()
   createdAt: Date;

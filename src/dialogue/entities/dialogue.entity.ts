@@ -1,12 +1,22 @@
 import { Choice } from "src/choice/entities/choice.entity";
 import { DialogueTree } from "src/dialoguetree/entities/dialoguetree.entity";
 import { Speaker } from "src/speaker/entities/speaker.entity";
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
+} from "typeorm";
 
 @Entity()
 export class Dialogue {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
   
   @Column('text')
   text: string;
@@ -22,6 +32,16 @@ export class Dialogue {
   
   @OneToMany(() => Choice, (choice) => choice.dialogue)
   choices: Choice[];
+
+  @Column("integer")
+  position: number;
+
+  @OneToOne(() => Dialogue, (dialogue) => dialogue.previous, { nullable: true })
+  @JoinColumn()
+  next: Dialogue | null;
+
+  @OneToOne(() => Dialogue, (dialogue) => dialogue.next, { nullable: true })
+  previous: Dialogue | null;
   
   @ManyToOne(
     () => DialogueTree, 
@@ -34,5 +54,5 @@ export class Dialogue {
   dialogueTree: DialogueTree;
   
   @ManyToOne(() => Speaker, (speaker) => speaker.dialogues)
-  speaker: Speaker;
+  speaker: Speaker | null;
 }
