@@ -39,9 +39,12 @@ export class DialoguetreeController {
         return this.dialoguetreeService.create(dto);
     }
 
-    @Patch()
-    update(@Body() dto: InputUpdateDialogueTreeDto): Promise<OutputGetDialogueTreeDto> {
-        return this.dialoguetreeService.update(dto)
+    @Patch(':id')
+    update(
+        @Param('id') id: string,
+        @Body() dto: InputUpdateDialogueTreeDto
+    ): Promise<OutputGetDialogueTreeDto> {
+        return this.dialoguetreeService.update(id, dto)
     }
 
     @Delete(':id')

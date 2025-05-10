@@ -2,9 +2,6 @@ import {IsOptional, IsString, IsUUID} from "class-validator";
 
 export class InputUpdateDialogueTreeDto {
     @IsUUID()
-    id: string;
-
-    @IsUUID()
     projectId: string;
 
     @IsString()

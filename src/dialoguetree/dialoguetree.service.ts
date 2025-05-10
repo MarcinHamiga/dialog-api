@@ -99,10 +99,11 @@ export class DialoguetreeService {
     }
 
     async update(
+        id: string,
         input: InputUpdateDialogueTreeDto,
     ): Promise<OutputGetDialogueTreeDto> {
         const tree = await this.dialoguetreeRepository.findOne({
-            where: { id: input.id },
+            where: { id },
             relations: ['project'],
         });
 
