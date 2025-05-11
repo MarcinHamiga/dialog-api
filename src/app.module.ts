@@ -8,7 +8,11 @@ import { ChoiceModule } from './choice/choice.module';
 import { DialoguetreeModule } from './dialoguetree/dialoguetree.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { join } from 'path';
+import { Project } from './project/entities/project.entity';
+import { Dialogue } from './dialogue/entities/dialogue.entity';
+import { Choice } from './choice/entities/choice.entity';
+import { Speaker } from './speaker/entities/speaker.entity';
+import { DialogueTree } from './dialoguetree/entities/dialoguetree.entity';
 
 @Module({
   imports: [
@@ -27,7 +31,7 @@ import { join } from 'path';
         useFactory: (configService: ConfigService) => ({
           type: 'sqlite',
           database: configService.get<string>('DATABASE_PATH', 'db.sqlite'),
-          entities: [join(__dirname, "**", '*.entity.{ts,js}')],
+          entities: [Project, Dialogue, Choice, Speaker, DialogueTree],
           synchronize: configService.get<string>('NODE_ENV') !== 'production',
           logging: configService.get<string>('NODE_ENV') !== 'production' ? ['query', 'error'] : ['error'],
         })
