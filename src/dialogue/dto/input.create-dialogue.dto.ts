@@ -6,15 +6,15 @@ export class InputCreateDialogueDto {
 
     @IsString()
     @IsOptional()
-    notes: string;
+    notes?: string;
 
     @IsString()
     @IsOptional()
-    next: string;
+    next?: string;
 
     @IsString()
     @IsOptional()
-    previous: string;
+    previous?: string;
 
     @IsString()
     dialogueTree: string;

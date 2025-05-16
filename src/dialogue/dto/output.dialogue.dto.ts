@@ -1,4 +1,5 @@
-import {Expose} from "class-transformer";
+import {Expose, Type} from "class-transformer";
+import {OutputChoiceDto} from "../../choice/dto/output.choice.dto";
 
 export class OutputDialogueDto {
     @Expose()
@@ -20,11 +21,9 @@ export class OutputDialogueDto {
     speaker: string;
 
     @Expose()
-    choices: string[];
+    @Type(() => OutputChoiceDto)
+    choices: OutputChoiceDto[];
 
     @Expose()
-    nextPosition: number;
-
-    @Expose()
-    previousPosition: number;
+    position: number;
 }

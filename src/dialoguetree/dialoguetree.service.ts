@@ -47,7 +47,7 @@ export class DialoguetreeService {
         order?: "ASC" | "DESC" | "asc" | "desc"
     ): Promise<OutputGetPaginatedDialogueTreeDto> {
         if (!take || take <= 0) {
-            take = 10;
+            take = 11;
         }
 
         if (!skip || skip <= 0) {
@@ -117,7 +117,7 @@ export class DialoguetreeService {
             const duplicate = await this.dialoguetreeRepository.findOne({
                 where: {
                     treeId: input.treeId,
-                    project: { id: input.projectId },
+                    project: { id: tree.project.id },
                 },
                 relations: ['project'],
             });

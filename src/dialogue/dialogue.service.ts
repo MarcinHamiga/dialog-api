@@ -49,7 +49,8 @@ export class DialogueService {
             skip: (skip - 1) * take,
             order: {
                 position: "ASC"
-            }
+            },
+            relations: ['choices']
         })
         const data = dialogues.map((elem: Dialogue) => {
             return transformToDto(OutputDialogueDto, elem);
@@ -65,6 +66,7 @@ export class DialogueService {
         let next: Dialogue | null = null;
         let previous: Dialogue | null = null;
         let speaker: Speaker | null = null;
+        const [_, position] = await this.dialogueRepository.findAndCount({ where: { dialogueTree: { id: payload.dialogueTree }}});
         const dialogueTree = await findOrFail(this.dialogueTreeRepository, payload.dialogueTree, "DialogueTree");
         if (payload.next) {
             next = await findOrFail(this.dialogueRepository, payload.next, "Dialogue");
@@ -81,6 +83,7 @@ export class DialogueService {
             dialogueTree,
             next,
             previous,
+            position,
             speaker,
         }
         const newDialogue = this.dialogueRepository.create(dialogue);
@@ -115,9 +118,29 @@ export class DialogueService {
     }
 
     async delete(id: string): Promise<void> {
+        const dialogue = await this.dialogueRepository.findOne({ where: { id }, relations: ["dialogueTree"] });
+        if (!dialogue) {
+            throw new NotFoundException("Dialogue not found");
+        }
         const result =  await this.dialogueRepository.delete(id);
         if (result.affected === 0) {
             throw new NotFoundException("Dialogue not found");
         }
+        const remaining = await this.dialogueRepository.find({
+            where: {
+                dialogueTree : {
+                    id : dialogue.dialogueTree.id
+                }
+            },
+            order: {
+                position : "ASC"
+            }
+        });
+        let position = 0;
+        remaining.map((elem: Dialogue) => {
+            elem.position = position;
+            position++;
+        })
+        await this.dialogueRepository.save(remaining);
     }
 }

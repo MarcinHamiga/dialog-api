@@ -45,11 +45,12 @@ export class ChoiceService {
         const choice: DeepPartial<Choice> = {
             dialogue,
             text: payload.text,
-            position: payload.position,
+            position: 0,
             next,
         }
+        choice.position = (await this.findAllByDialogue(payload.dialogue)).length;
         const newChoice: Choice = this.choiceRepository.create(choice);
-        return transformToDto(OutputChoiceDto, this.choiceRepository.save(newChoice));
+        return transformToDto(OutputChoiceDto, await this.choiceRepository.save(newChoice));
     }
 
     async update(id: string, payload: InputUpdateChoiceDto): Promise<OutputChoiceDto> {
